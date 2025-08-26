@@ -1,20 +1,16 @@
-import './App.css'
-import { Button } from "@/components/ui/button";
+import './App.css';
+import { Routes, Route } from 'react-router-dom';
+import { UploadPage } from "@/pages/UploadPage/UploadPage.tsx";
+import { PreviewPage } from '@/pages/PreviewPage/PreviewPage.tsx';
 
 function App() {
 
-
-  return (
-    <>
-        <div>
-            <h1 className='text-6xl underline'>Hello world</h1>
-            <div className="flex min-h-svh flex-col items-center justify-center">
-                <Button>Click me</Button>
-            </div>
-        </div>
-
-    </>
-  )
+    return (
+        <Routes>
+            <Route path='/' element={<UploadPage />} />
+            <Route path='/preview' element={<PreviewPage />}/>
+        </Routes>
+    )
 }
 
 export default App
