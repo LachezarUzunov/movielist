@@ -1,53 +1,59 @@
-import type { Movie, MovieDetails } from "@/types/movie.ts";
+import type {Genre, Movie, MovieDetails} from "@/types/movie.ts";
+import { tmdbApi } from "@/lib/axios.ts";
 
-const options = {
-	method: 'GET',
-	headers: {
-		accept: 'application/json',
-		Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlMTNlNTUyM2JmYTkzYTQwZWUyMWU3MzI4YjJlOTdhNyIsIm5iZiI6MTc1NjIzNzkxMi4yODYsInN1YiI6IjY4YWUxMDU4MTE4N2VjMzM4YTNkODY0ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.EeIAi_LFA7AS8CHvwhA9TKjCdLNqGjLPme9Sx3crFqw'
-	}
-};
+export async function getMovies(titles: string[], getAll: boolean = false): Promise<Movie[]> {
+	try {
+		const results = await Promise.all(
+			titles.map(async (title: string) => {
+				const { data } = await tmdbApi.get('search/movie', {
+					params: {
+						query: title,
+						include_adult: false,
+						language: "en-US",
+						page: 1
+					}
+				});
 
-const mainPath = 'https://api.themoviedb.org/3/';
+				if (!data.results?.length) return null;
 
-export async function getMovies(titles: string[]) {
-	return Promise.all(
-		titles.map(async (title) => {
-			const res = await fetch(
-				`${mainPath}search/movie?query=${title}&include_adult=false&language=en-US&page=1`, options);
+				if (getAll) {
+					return data.results.map((movie: any) => ({
+						id: movie.id,
+						title: movie.title,
+						overview: movie.overview,
+						posterPath: movie.poster_path,
+						releaseDate: movie.release_date
+					})) as Movie[];
+				}
 
-			if(!res.ok) return null;
-
-			if (res.status === 200) {
-				const data = await res.json();
-				const firstMovie = data.results?.[0];
-				if (!firstMovie) return null;
-
+				const firstMovie = data.results[0];
 				return {
 					id: firstMovie.id,
 					title: firstMovie.title,
 					overview: firstMovie.overview,
-					posterPath: firstMovie.posterPath,
-					releaseDate: firstMovie.release_date
-				} as Movie
-			}
-		})
-	).then((results) => results.filter((m): m is Movie => m !== null));
+					posterPath: firstMovie.poster_path,
+					releaseDate: firstMovie.release_date,
+				} as Movie;
+			})
+		)
+
+		return results.flat().filter((movie): movie is Movie => movie !== null);
+	} catch(err) {
+		return []
+	}
 }
 
 export async function getMovieDetails(id: number): Promise<MovieDetails | null> {
 	try {
 		const [detailsResponse, creditsResponse, videosResponse] = await Promise.all([
-			fetch(`${mainPath}/movie/${id}?language=en-US`, options),
-			fetch(`${mainPath}/movie/${id}/credits?language=en-US`, options),
-			fetch(`${mainPath}/movie/${id}/videos?language=en-US`, options),
+			tmdbApi.get(`movie/${id}`, { params: { language: 'en-US'}}),
+			tmdbApi.get(`movie/${id}/credits`, { params: { language: 'en-US'}}),
+			tmdbApi.get(`movie/${id}/videos`, { params: { language: 'en-US'}})
 		])
 
-		if (!detailsResponse.ok) return null;
-
-		const details = await detailsResponse.json();
-		const credits = await creditsResponse.json();
-		const videos = await videosResponse.json();
+		const details = await detailsResponse.data;
+		const credits = await creditsResponse.data;
+		const videos = await videosResponse.data;
 
 		const director = credits.crew?.find((c: any) => c.job === 'Director')?.name || "Unknown";
 		const actors = credits.cast?.slice(0, 10).map((actor: any) => actor.name) || [];
@@ -73,6 +79,12 @@ export async function getMovieDetails(id: number): Promise<MovieDetails | null> 
 	}
 }
 
-export async function getSingleMovie(title: string) {
-
+export async function getAllGenres(): Promise<Genre[]>{
+	try {
+		const res = await tmdbApi.get(`genre/movie/list`);
+		return await res.data.genres;
+	} catch (err) {
+		console.log('Error getting movie genres: ', err);
+		return null;
+	}
 }

@@ -14,3 +14,8 @@ export interface MovieDetails extends Movie {
 	rating: number;
 	trailer: string;
 }
+
+export interface Genre {
+	id: number;
+	name: string;
+}
