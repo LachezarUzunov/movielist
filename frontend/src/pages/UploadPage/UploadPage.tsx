@@ -1,17 +1,20 @@
 //import { Upload } from "@/pages/UploadPage/components/Upload.tsx";
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import {Input} from "@/components/ui/input.tsx";
 import {useEffect, useState} from "react";
 import {SingleTitle} from "@/pages/UploadPage/components/SingleTitle.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from 'react-hook-form';
-import * as React from "react";
+import { getMovies } from "@/services/tmdbService.ts";
 
 type FormValues = {
 	movies: string[]
 }
 
 export function UploadPage() {
+	const navigate = useNavigate();
 	const [textFile, setTextFile] = useState<string>();
 	const [movieTitles, setMovieTitles] = useState<string[]>([]);
 
@@ -19,7 +22,7 @@ export function UploadPage() {
 		defaultValues: { movies: [] }
 	})
 
-	const { handleSubmit, control } = form
+	const { handleSubmit, control, reset } = form
 
 	const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -35,23 +38,20 @@ export function UploadPage() {
 	useEffect(() => {
 		if (! textFile) return;
 
-		setMovieTitles(textFile.split(/\r\n|\n/).filter(Boolean));
-	}, [textFile]);
+		const titles = textFile.split(/\r\n|\n/).filter(Boolean);
+		setMovieTitles(titles);
+		reset({ movies: titles });
+	}, [textFile, reset]);
 
-	useEffect(() => {
-		if (movieTitles.length > 0) {
-			form.reset({ movies: movieTitles }) // all checkboxes pre-checked
-		}
-	}, [movieTitles])
-
-	const onSubmit: SubmitHandler<FormValues> = (data) => {
-		console.log("Selected movies:", data.movies)
-		// TODO: send to TMDB API
+	const onSubmit: SubmitHandler<FormValues> = async (data) => {
+		const movieResults = await getMovies(data.movies);
+		navigate('/preview', { state: { movieResults }});
 	}
 
 	const resetMovies = () => {
 		setMovieTitles([]);
 		setTextFile('');
+		reset({ movies: [] });
 	}
 
 	return (
@@ -66,10 +66,10 @@ export function UploadPage() {
 	                    className="cursor-pointer"
 	                    onChange={handleFileUpload}
                     />
-                    <h4>
+                    <h3>
                         Please note that only .txt files are accepted. Separate each
                         movie on a new line without commas or quotes. For example:
-                    </h4>
+                    </h3>
                     <h4>Interstellar</h4>
                     <h4>The Shawshenk Redemption</h4>
                     <h4>Avatar</h4>
@@ -96,7 +96,7 @@ export function UploadPage() {
 			)}
 
 			{movieTitles.length > 0 && (
-				<div className='mt-8'>
+				<div className='mt-8 w-full'>
 					<Button onClick={resetMovies} className='w-full cursor-pointer'>Back to Upload</Button>
 				</div>
 			)}
