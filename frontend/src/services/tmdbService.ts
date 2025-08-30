@@ -79,7 +79,7 @@ export async function getMovieDetails(id: number): Promise<MovieDetails | null> 
 	}
 }
 
-export async function getAllGenres(): Promise<Genre[]>{
+export async function getAllGenres(): Promise<Genre[] | null>{
 	try {
 		const res = await tmdbApi.get(`genre/movie/list`);
 		return await res.data.genres;
