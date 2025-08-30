@@ -9,6 +9,7 @@ import { saveDummyEndpoint } from "@/services/api/watchlistService.ts";
 import {MovieDetailsCard} from "@/pages/PreviewPage/components/MovieDetailsCard.tsx";
 import {GenresFilter} from "@/pages/PreviewPage/components/GenresFilter.tsx";
 import {MoviesSearch} from "@/pages/PreviewPage/components/MoviesSearch.tsx";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 export function PreviewPage() {
 	const location = useLocation();
@@ -46,6 +47,14 @@ export function PreviewPage() {
 		}
 	}
 
+	const onDragEnd = (result: any) => {
+		if (! result.destination) return;
+		const items = Array.from(movieDetails);
+		const [moved] = items.splice(result.source.index, 1);
+		items.splice(result.destination.index, 0, moved);
+		setMovieDetails(items);
+	}
+
 	const filteredMovies = selectedGenre ?
 		movieDetails.filter((movie) => movie.genres.some((genre) => genre === selectedGenre))
 		: movieDetails;
@@ -61,25 +70,43 @@ export function PreviewPage() {
 				</div>
 			</div>
 
-			<div className='grid gap-6 md:grid-cols-2'>
-				{filteredMovies.map((details) => {
-					return (
-						<Card key={details.id} className='relative'>
-							<Button
-								variant='ghost'
-								size='icon'
-								className='absolute top-2 right-2'
-								onClick={() => removeMovie(details.id)}
-							>
-								<Trash2 className='h-6 w-6 text-red-600'/>
-							</Button>
-							<CardContent className='flex gap-4 p-4'>
-								<MovieDetailsCard details={details}/>
-							</CardContent>
-						</Card>
-					)
-				})}
-			</div>
+			<DragDropContext onDragEnd={onDragEnd}>
+				<Droppable droppableId='movies'>
+					{(provided) => (
+						<div
+							className='grid gap-6 md:grid-cols-2'
+							{...provided.droppableProps}
+							ref={provided.innerRef}
+						>
+							{filteredMovies.map((details, index) => (
+								<Draggable key={details.id} draggableId={details.id.toString()} index={index}>
+									{(provided) => (
+										<Card key={details.id}
+										      className='relative'
+										      {...provided.draggableProps}
+										      {...provided.dragHandleProps}
+										      ref={provided.innerRef}
+										>
+											<Button
+												variant='ghost'
+												size='icon'
+												className='absolute top-2 right-2'
+												onClick={() => removeMovie(details.id)}
+											>
+												<Trash2 className='h-6 w-6 text-red-600'/>
+											</Button>
+											<CardContent className='flex gap-4 p-4'>
+												<MovieDetailsCard details={details}/>
+											</CardContent>
+										</Card>
+									)}
+								</Draggable>
+							))}
+							{provided.placeholder}
+						</div>
+					)}
+				</Droppable>
+			</DragDropContext>
 
 			{filteredMovies.length > 0 && (
 				<div className='flex justify-center mt-8'>
