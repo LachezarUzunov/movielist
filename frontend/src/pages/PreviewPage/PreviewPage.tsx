@@ -64,7 +64,7 @@ export function PreviewPage() {
 			<h1 className='text-2xl font-bold mb-4'>List of Found Movies</h1>
 
 			<div className="grid md:grid-cols-2 gap-4 mb-4">
-				<div className='flex flex-row gap-4'>
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 					<MoviesSearch movieDetails={movieDetails} setMovieDetails={setMovieDetails}/>
 					<GenresFilter selectedGenre={selectedGenre} onSelectGenre={setSelectedGenre}/>
 				</div>

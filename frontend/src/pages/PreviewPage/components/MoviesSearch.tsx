@@ -1,4 +1,5 @@
 import React from 'react';
+import { LANGUAGES } from "@/constants/languages.ts";
 import {useEffect, useState} from "react";
 import {getMovieDetails, getMovies} from "@/services/tmdbService.ts";
 import {useDebounce} from "@/hooks/useDebounce.ts";
@@ -8,6 +9,7 @@ type SearchProps = {
 	movieDetails: MovieDetails[];
 	setMovieDetails: React.Dispatch<React.SetStateAction<MovieDetails[]>>;
 };
+
 export function MoviesSearch({ movieDetails, setMovieDetails }: SearchProps) {
 	const [movieSuggestions, setMovieSuggestions] = useState<Movie[]>([]);
 	const [language, setLanguage] = useState<string>('');
@@ -15,7 +17,7 @@ export function MoviesSearch({ movieDetails, setMovieDetails }: SearchProps) {
 	const debouncedSearch = useDebounce(search, 400);
 
 	const handleSelectSuggestion = async (id: number) => {
-		const foundMovieDetails = await getMovieDetails(id);
+		const foundMovieDetails = await getMovieDetails(id, language);
 		if (foundMovieDetails && !movieDetails.some(m => m.id === foundMovieDetails.id)) {
 			setMovieDetails((prev) => [...prev, foundMovieDetails]);
 		}
@@ -31,12 +33,12 @@ export function MoviesSearch({ movieDetails, setMovieDetails }: SearchProps) {
 				return;
 			}
 
-			const results = await getMovies([debouncedSearch], true);
+			const results = await getMovies([debouncedSearch], true, language);
 			setMovieSuggestions(results.slice(0, 5));
 		};
 
 		fetchSuggestions();
-	}, [debouncedSearch]);
+	}, [debouncedSearch, language]);
 
 	return (
 		<div className='bg-white p-4 rounded-lg shadow flex flex-col gap-2 w-full'>
@@ -45,9 +47,11 @@ export function MoviesSearch({ movieDetails, setMovieDetails }: SearchProps) {
 				value={language}
 				onChange={(e) => setLanguage(e.target.value)}
 			>
-				<option value='en'>English</option>
-				<option value='bg'>Bulgarian</option>
-				<option value='es'>Spanish</option>
+				{LANGUAGES.map((lang) => (
+					<option key={lang.code} value={lang.code}>
+						{lang.name}
+					</option>
+				))}
 			</select>
 			<div className='flex gap-2 relative'>
 				<input

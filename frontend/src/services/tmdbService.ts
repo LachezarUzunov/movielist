@@ -1,7 +1,7 @@
 import type {Genre, Movie, MovieDetails} from "@/types/movie.ts";
 import { tmdbApi } from "@/lib/axios.ts";
 
-export async function getMovies(titles: string[], getAll: boolean = false): Promise<Movie[]> {
+export async function getMovies(titles: string[], getAll: boolean = false, lang: string): Promise<Movie[]> {
 	try {
 		const results = await Promise.all(
 			titles.map(async (title: string) => {
@@ -9,7 +9,7 @@ export async function getMovies(titles: string[], getAll: boolean = false): Prom
 					params: {
 						query: title,
 						include_adult: false,
-						language: "en-US",
+						language: lang || "en-US",
 						page: 1
 					}
 				});
@@ -43,12 +43,12 @@ export async function getMovies(titles: string[], getAll: boolean = false): Prom
 	}
 }
 
-export async function getMovieDetails(id: number): Promise<MovieDetails | null> {
+export async function getMovieDetails(id: number, lang: string): Promise<MovieDetails | null> {
 	try {
 		const [detailsResponse, creditsResponse, videosResponse] = await Promise.all([
-			tmdbApi.get(`movie/${id}`, { params: { language: 'en-US'}}),
-			tmdbApi.get(`movie/${id}/credits`, { params: { language: 'en-US'}}),
-			tmdbApi.get(`movie/${id}/videos`, { params: { language: 'en-US'}})
+			tmdbApi.get(`movie/${id}`, { params: { language: lang || 'en-US'}}),
+			tmdbApi.get(`movie/${id}/credits`, { params: { language: lang || 'en-US'}}),
+			tmdbApi.get(`movie/${id}/videos`, { params: { language: lang || 'en-US'}})
 		])
 
 		const details = await detailsResponse.data;

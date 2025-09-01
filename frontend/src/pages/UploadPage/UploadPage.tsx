@@ -1,7 +1,6 @@
-//import { Upload } from "@/pages/UploadPage/components/Upload.tsx";
+import { Upload } from "@/pages/UploadPage/components/Upload.tsx";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import {Input} from "@/components/ui/input.tsx";
 import {useEffect, useState} from "react";
 import {SingleTitle} from "@/pages/UploadPage/components/SingleTitle.tsx";
 import {Button} from "@/components/ui/button.tsx";
@@ -15,7 +14,7 @@ type FormValues = {
 
 export function UploadPage() {
 	const navigate = useNavigate();
-	const [textFile, setTextFile] = useState<string>();
+	const [textFile, setTextFile] = useState<string|null>(null);
 	const [movieTitles, setMovieTitles] = useState<string[]>([]);
 
 	const form = useForm<FormValues>({
@@ -56,50 +55,40 @@ export function UploadPage() {
 
 	return (
 		<section className="min-h-screen bg-slate-100 flex flex-col items-center p-8">
-			<h1 className="text-3xl font-bold mb-6">Movie List</h1>
-			{movieTitles.length == 0 &&
-                <div className="w-full max-w-xl bg-white p-6 rounded-xl shadow-lg flex flex-col gap-4">
-                    <Input
-	                    id="list"
-                        key={textFile}
-	                    type="file"
-	                    className="cursor-pointer"
-	                    onChange={handleFileUpload}
-                    />
-                    <h3>
-                        Please note that only .txt files are accepted. Separate each
-                        movie on a new line without commas or quotes. For example:
-                    </h3>
-                    <h4>Interstellar</h4>
-                    <h4>The Shawshenk Redemption</h4>
-                    <h4>Avatar</h4>
-                </div>
-			}
+			<div className="w-full max-w-lg bg-white p-8 rounded-2xl shadow-lg flex flex-col gap-6">
+				<h2 className="text-xl font-bold text-center text-gray-800">Upload Your Movie List</h2>
+				<p className="text-gray-600 text-sm text-center">
+					Select a <span className="text-black">.txt</span> file containing your movies.
+					Each movie should be on a separate line.
+					This helps us recognize them and get details about the movies.
+				</p>
+				{movieTitles.length == 0 &&
+	                <Upload
+	                    textFile={textFile}
+	                    onHandleFileUpload={handleFileUpload}
+	                />
+				}
 
-			{movieTitles.length > 0 && (
-				<form
-					onSubmit={handleSubmit(onSubmit)}
-					className='w-full max-w-xl mt-6 space-y-4'
-				>
-					<div className='flex flex-col gap-12px'>
-						{movieTitles.map((title, index) => (
-							<SingleTitle
-								title={title}
-								key={index}
-								control={control}
-							/>
-						))}
-					</div>
+				{movieTitles.length > 0 && (
+					<form
+						onSubmit={handleSubmit(onSubmit)}
+						className='w-full max-w-xl mt-6 space-y-4'
+					>
+						<div className='flex flex-col gap-12px'>
+							{movieTitles.map((title, index) => (
+								<SingleTitle
+									title={title}
+									key={index}
+									control={control}
+								/>
+							))}
+						</div>
 
-					<Button type='submit' className='w-full cursor-pointer'>Get movies</Button>
-				</form>
-			)}
-
-			{movieTitles.length > 0 && (
-				<div className='mt-8 w-full'>
-					<Button onClick={resetMovies} className='w-full cursor-pointer'>Back to Upload</Button>
-				</div>
-			)}
+						<Button type='submit' className='w-full cursor-pointer'>Get movies</Button>
+						<Button onClick={resetMovies} className='w-full cursor-pointer'>Back to Upload</Button>
+					</form>
+				)}
+			</div>
 		</section>
 	)
 }
