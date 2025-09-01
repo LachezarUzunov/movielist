@@ -96,7 +96,12 @@ export function PreviewPage() {
 												<Trash2 className='h-6 w-6 text-red-600'/>
 											</Button>
 											<CardContent className='flex gap-4 p-4'>
-												<MovieDetailsCard details={details}/>
+												<MovieDetailsCard details={details}
+												                  onUpdate={(id, updated) => {
+																	  setMovieDetails((prev) =>
+														                  prev.map((m) => (m.id === id ? { ...m, ...updated } : m))
+													                  )
+												                  }}/>
 											</CardContent>
 										</Card>
 									)}

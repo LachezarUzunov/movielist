@@ -1,7 +1,7 @@
 import type {Genre, Movie, MovieDetails} from "@/types/movie.ts";
 import { tmdbApi } from "@/lib/axios.ts";
 
-export async function getMovies(titles: string[], getAll: boolean = false, lang: string): Promise<Movie[]> {
+export async function getMovies(titles: string[], getAll: boolean = false, lang: string = ''): Promise<Movie[]> {
 	try {
 		const results = await Promise.all(
 			titles.map(async (title: string) => {
@@ -43,7 +43,7 @@ export async function getMovies(titles: string[], getAll: boolean = false, lang:
 	}
 }
 
-export async function getMovieDetails(id: number, lang: string): Promise<MovieDetails | null> {
+export async function getMovieDetails(id: number, lang: string = ''): Promise<MovieDetails | null> {
 	try {
 		const [detailsResponse, creditsResponse, videosResponse] = await Promise.all([
 			tmdbApi.get(`movie/${id}`, { params: { language: lang || 'en-US'}}),

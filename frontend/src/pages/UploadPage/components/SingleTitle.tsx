@@ -1,12 +1,9 @@
-"use client"
-
 import { Controller } from "react-hook-form";
 import type { Control } from "react-hook-form"
 import { Checkbox } from "@/components/ui/checkbox";
 
 type Props = {
 	title: string;
-	//index: number;
 	control: Control<{movies: string[]}>
 }
 

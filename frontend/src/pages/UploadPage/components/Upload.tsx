@@ -37,5 +37,5 @@ export function Upload({ textFile, onHandleFileUpload}: UploadProps) {
                 </p>
 			</div>
 		</div>
-)
+	)
 }
